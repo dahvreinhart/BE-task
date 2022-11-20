@@ -38,7 +38,7 @@ async function seed() {
     Profile.create({
       id: 4,
       firstName: 'Ash',
-      lastName: 'Kethcum',
+      lastName: 'Ketchum',
       profession: 'Pokemon master',
       balance: 1.3,
       type:'client'
@@ -74,6 +74,13 @@ async function seed() {
       profession: 'Fighter',
       balance: 314,
       type:'contractor'
+    }),
+    Profile.create({
+      id: 9,
+      firstName: 'Luke',
+      lastName: 'Skywalker',
+      profession: 'Jedi',
+      type:'admin'
     }),
     Contract.create({
       id:1,

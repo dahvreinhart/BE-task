@@ -1,5 +1,4 @@
 const getProfile = async (req, res, next) => {
-    console.log(req.app);
     const { Profile } = req.app.get('models');
 
     if (!req.get('profile_id')) {
