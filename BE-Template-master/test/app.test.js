@@ -32,7 +32,7 @@ describe("App Controller Tests", () => {
                 profession: 'test',
                 balance: 1000,
                 type: 'client'
-            })
+            });
 
             const client2 = await Profile.create({
                 id: 2,
@@ -41,7 +41,7 @@ describe("App Controller Tests", () => {
                 profession: 'test',
                 balance: 1000,
                 type: 'client'
-            })
+            });
 
             const contract1 = await Contract.create({
                 id: 1,
@@ -86,7 +86,7 @@ describe("App Controller Tests", () => {
                 profession: 'test',
                 balance: 1000,
                 type: 'contractor'
-            })
+            });
 
             const contractor2 = await Profile.create({
                 id: 2,
@@ -95,7 +95,7 @@ describe("App Controller Tests", () => {
                 profession: 'test',
                 balance: 1000,
                 type: 'contractor'
-            })
+            });
 
             const contract1 = await Contract.create({
                 id: 1,
@@ -140,7 +140,7 @@ describe("App Controller Tests", () => {
                 profession: 'test',
                 balance: 1000,
                 type: 'client'
-            })
+            });
 
             await request(app)
                 .get('/contracts')
@@ -159,7 +159,7 @@ describe("App Controller Tests", () => {
                 profession: 'test',
                 balance: 1000,
                 type: 'contractor'
-            })
+            });
 
             const contract1 = await Contract.create({
                 id: 1,
@@ -192,7 +192,198 @@ describe("App Controller Tests", () => {
             await request(app)
                 .get('/contracts')
                 .set('profile_id', 12345)
-                .expect(401)
+                .expect(401);
+        });
+    });
+
+    describe("POST /jobs/:job_id/pay | As a client, pay for an outstanding job", () => {
+        const seedTestObjectsForJobPaymentTests = async () => {
+            const client = await Profile.create({
+                id: 1,
+                firstName: 'test',
+                lastName: 'test',
+                profession: 'test',
+                balance: 1000,
+                type: 'client'
+            });
+
+            const contractor = await Profile.create({
+                id: 2,
+                firstName: 'test',
+                lastName: 'test',
+                profession: 'test',
+                balance: 100,
+                type: 'contractor'
+            });
+
+            const contract = await Contract.create({
+                id: 1,
+                terms: 'bla bla bla',
+                status: 'in_progress',
+                ClientId: client.id,
+                ContractorId: contractor.id,
+            });
+
+            const job = await Job.create({
+                description: 'work',
+                price: 500,
+                ContractId: contract.id,
+            });
+
+            return { client, contractor, contract, job };
+        };
+
+        it("should succeed and pay for a job", async () => {
+            const { client, contractor, _ , job } = await seedTestObjectsForJobPaymentTests();
+
+            await request(app)
+                .post(`/jobs/${job.id}/pay`)
+                .set(`profile_id`, client.id)
+                .expect(200)
+                .then(async (res) => {
+                    const updatedJob = await Job.findOne({ where: { id: job.id } });
+                    const updatedClient = await Profile.findOne({ where: { id: client.id } });
+                    const updatedContractor = await Profile.findOne({ where: { id: contractor.id } });
+
+                    expect(res.body.id).to.eq(job.id).and.to.eq(updatedJob.id);
+                    expect(updatedJob.paid).to.eq(true);
+                    expect(updatedJob.paymentDate).to.be.a("Date");
+
+                    expect(updatedClient.balance).to.eq(client.balance - job.price);
+                    expect(updatedContractor.balance).to.eq(contractor.balance + job.price);
+                });
+        });
+
+        it("should succeed and pay for a job which has a price of 0", async () => {
+            const { client, contractor, job } = await seedTestObjectsForJobPaymentTests();
+
+            job.price = 0;
+            await job.save();
+
+            await request(app)
+                .post(`/jobs/${job.id}/pay`)
+                .set(`profile_id`, client.id)
+                .expect(200)
+                .then(async (res) => {
+                    const updatedJob = await Job.findOne({ where: { id: job.id } });
+                    const updatedClient = await Profile.findOne({ where: { id: client.id } });
+                    const updatedContractor = await Profile.findOne({ where: { id: contractor.id } });
+
+                    expect(res.body.id).to.eq(job.id).and.to.eq(updatedJob.id);
+                    expect(updatedJob.paid).to.eq(true);
+                    expect(updatedJob.paymentDate).to.be.a("Date");
+
+                    expect(updatedClient.balance).to.eq(client.balance);
+                    expect(updatedContractor.balance).to.eq(contractor.balance);
+                });
+        });
+
+        it("should fail and return an error when the user is unauthenticated or is not a client", async  () => {
+            const { contractor, job } = await seedTestObjectsForJobPaymentTests();
+
+            await request(app)
+                .post(`/jobs/${job.id}/pay`)
+                .set(`profile_id`, 12345)
+                .expect(401);
+
+            await request(app)
+                .post(`/jobs/${job.id}/pay`)
+                .set(`profile_id`, contractor.id)
+                .expect(403);
+        });
+
+        it("should fail and return an error when no job id is given", async () => {
+            const { client } = await seedTestObjectsForJobPaymentTests();
+
+            await request(app)
+                .post(`/jobs/${""}/pay`)
+                .set(`profile_id`, client.id)
+                .expect(404);
+        });
+
+        it("should fail and return an error when the job cannot be found", async () => {
+            const { client } = await seedTestObjectsForJobPaymentTests();
+
+            await request(app)
+                .post(`/jobs/12345/pay`)
+                .set(`profile_id`, client.id)
+                .expect(400);
+        });
+
+        it("should fail and return an error when the job is already paid", async () => {
+            const { client, job } = await seedTestObjectsForJobPaymentTests();
+
+            job.paid = true;
+            await job.save();
+
+            await request(app)
+                .post(`/jobs/${job.id}/pay`)
+                .set(`profile_id`, client.id)
+                .expect(400);
+        });
+
+        it("should fail and return an error when the job has an invalid price", async () => {
+            const { client, job } = await seedTestObjectsForJobPaymentTests();
+
+            job.price = -500;
+            await job.save();
+
+            await request(app)
+                .post(`/jobs/${job.id}/pay`)
+                .set(`profile_id`, client.id)
+                .expect(400);
+        });
+
+        it("should fail and return an error when the associated contract cannot be found", async () => {
+            const { client, contract, job } = await seedTestObjectsForJobPaymentTests();
+
+            await contract.destroy();
+
+            await request(app)
+                .post(`/jobs/${job.id}/pay`)
+                .set(`profile_id`, client.id)
+                .expect(400);
+        });
+
+        it("should fail and return an error when the authenticated user is not associated with the contract to which the job belongs", async () => {
+            const { job } = await seedTestObjectsForJobPaymentTests();
+
+            const unassociatedClient = await Profile.create({
+                id: 3,
+                firstName: 'test',
+                lastName: 'test',
+                profession: 'test',
+                balance: 1000,
+                type: 'client'
+            });
+
+            await request(app)
+                .post(`/jobs/${job.id}/pay`)
+                .set(`profile_id`, unassociatedClient.id)
+                .expect(400);
+        });
+
+        it("should fail and return an error when the associated contractor user cannot be found", async () => {
+            const { client, contractor, job } = await seedTestObjectsForJobPaymentTests();
+
+            await contractor.destroy();
+
+            await request(app)
+                .post(`/jobs/${job.id}/pay`)
+                .set(`profile_id`, client.id)
+                .expect(400);
+        });
+
+        it("should fail and return an error when the client does not have enough money to pay for the job", async () => {
+            const { client, job } = await seedTestObjectsForJobPaymentTests();
+
+            client.balance = job.price - 1;
+            await client.save();
+
+            await request(app)
+                .post(`/jobs/${job.id}/pay`)
+                .set(`profile_id`, client.id)
+                .expect(400);
         });
     });
 });

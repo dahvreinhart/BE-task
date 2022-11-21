@@ -165,7 +165,7 @@ app.post('/jobs/:job_id/pay', getProfile, async (req, res) => {
 
         res.json(updatedJob);
     } catch (error) {
-        return res.json(error).status(400).end();
+        return res.status(400).end();
     }
 });
 
@@ -242,7 +242,7 @@ app.post('/balances/deposit/:userId', getProfile, async (req, res) => {
 
         res.json(updatedClientProfile);
     } catch (error) {
-        return res.json(error).status(400).end();
+        return res.status(400).end();
     }
 });
 
