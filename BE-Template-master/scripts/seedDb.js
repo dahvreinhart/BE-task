@@ -85,7 +85,7 @@ async function seed() {
     Contract.create({
       id:1,
       terms: 'bla bla bla',
-     status: 'terminated',
+      status: 'terminated',
       ClientId: 1,
       ContractorId:5
     }),

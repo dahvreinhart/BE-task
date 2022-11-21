@@ -21,14 +21,17 @@ app.get('/contracts/:id', getProfile, async (req, res) => {
         return res.status(404).end();
     }
 
+    const query = { id };
+    if (req.profile.type === 'client') {
+        query.ClientId = req.profile.id;
+    } else if (req.profile.type === 'contractor') {
+        query.ContractorId = req.profile.id;
+    } else {
+        return res.status(403).end();
+    }
+
     // The contract must belong to the requesting user whether they are a client of contractor
-    const contract = await Contract.findOne({ where: {
-        id,
-        [Op.or]: [
-            { ClientId: req.profile.id },
-            { ContractorId: req.profile.id },
-        ],
-    }});
+    const contract = await Contract.findOne({ where: query });
 
     if (!contract) {
         return res.status(404).end();
@@ -45,13 +48,16 @@ app.get('/contracts/:id', getProfile, async (req, res) => {
 app.get('/contracts', getProfile, async (req, res) => {
     const { Contract } = req.app.get('models');
 
-    const contracts = await Contract.findAll({ where: {
-        status: { [Op.ne]: 'terminated' },
-        [Op.or]: [
-            { ClientId: req.profile.id },
-            { ContractorId: req.profile.id },
-        ],
-    }});
+    const query = { status: { [Op.ne]: 'terminated' } };
+    if (req.profile.type === 'client') {
+        query.ClientId = req.profile.id;
+    } else if (req.profile.type === 'contractor') {
+        query.ContractorId = req.profile.id;
+    } else {
+        return res.status(403).end();
+    }
+
+    const contracts = await Contract.findAll({ where: query});
 
     res.json(contracts);
 });
@@ -66,13 +72,16 @@ app.get('/jobs/unpaid', getProfile, async (req, res) => {
     const { Contract } = req.app.get('models');
     const { Job } = req.app.get('models');
 
-    const activeContracts = await Contract.findAll({ attributes: ['id'], where: {
-        status: { [Op.ne]: 'terminated' },
-        [Op.or]: [
-            { ClientId: req.profile.id },
-            { ContractorId: req.profile.id },
-        ],
-    }});
+    const query = { status: { [Op.ne]: 'terminated' } };
+    if (req.profile.type === 'client') {
+        query.ClientId = req.profile.id;
+    } else if (req.profile.type === 'contractor') {
+        query.ContractorId = req.profile.id;
+    } else {
+        return res.status(403).end();
+    }
+
+    const activeContracts = await Contract.findAll({ attributes: ['id'], where: query });
 
     const unpaidJobs = await Job.findAll({ where: {
         ContractId: { [Op.in]: activeContracts.map((ac) => ac.id) },
