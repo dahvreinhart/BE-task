@@ -1,3 +1,33 @@
+# EDIT FROM DAHV:
+Thank you for reviewing my coding challenge submission! :)
+
+Overall, I found the challenge engaging and enjoyable.
+I, of course, didn't have enough time to do everything I wanted to do.
+So I will elaborate on what my immediate next steps would have been had time not been a factor:
+- Populate all errors with messages/codes
+- Refactor project to a more modular structure with different modules for each model type and separate exposed interfaces for each model's actions
+- Implement a service level and refactor a bit to reuse more common code
+- Refactor successive DB calls for admin stats endpoints to use subqueries and try to do as much in the DB
+- Use prettier or similar and lint the code
+- Extend tests for all actions
+- Implement some test util functions to help deduplicate test seeding code and assertions etc
+- Improve test startup and teardown vis-a-vis the tmp db and object cleaning
+
+I also noticed that concurrency is a topic which is important here.
+To this end I implemented several applicable concepts for the logic concerned with updating models:
+- All models are now versioned meaning they will be protected against race conditions updating outdated information at the DB level
+- Logic which updates models (the two POST endpoints) are transationed meaning all reading and writing occures with SQL transactions - updates are only commited if no intermediate erros are encountered
+- Logic which updtes models (the two POST endpoints) use DB locks for objects to be updated locking the specific rows for these objects, thus, not allowing intermediate updates on the tables during these critical times
+
+Lastly, I implemented some tests for some endpoints.
+These can be run with `npm run test`.
+
+Again, thank you for your time reviewing my code.
+If you have any questions please do not hesitate to reach out.
+
+---
+
+
 # DEEL BACKEND TASK
 
   
@@ -35,15 +65,15 @@ The exercise requires [Node.js](https://nodejs.org/en/) to be installed. We reco
 
   
 
-1. In the repo root directory, run `npm install` to gather all dependencies.
+2. In the repo root directory, run `npm install` to gather all dependencies.
 
   
 
-1. Next, `npm run seed` will seed the local SQLite database. **Warning: This will drop the database if it exists**. The database lives in a local file `database.sqlite3`.
+3. Next, `npm run seed` will seed the local SQLite database. **Warning: This will drop the database if it exists**. The database lives in a local file `database.sqlite3`.
 
   
 
-1. Then run `npm start` which should start both the server and the React client.
+4. Then run `npm start` which should start both the server and the React client.
 
   
 
