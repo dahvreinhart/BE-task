@@ -1,7 +1,7 @@
-# EDIT FROM DAHV:
-Thank you for reviewing my coding challenge submission! :)
+# EDIT - FROM DAHV:
+Thank you for reviewing my code! :)
 
-Overall, I found the challenge engaging and enjoyable.
+Overall, I found the task engaging and enjoyable.
 I, of course, didn't have enough time to do everything I wanted to do.
 So I will elaborate on what my immediate next steps would have been had time not been a factor:
 - Populate all errors with messages/codes
@@ -22,20 +22,15 @@ To this end I implemented several applicable concepts for the logic concerned wi
 Lastly, I implemented some tests for some endpoints.
 These can be run with `npm run test`.
 
-Again, thank you for your time reviewing my code.
+Again, thank you for your time looking through my code.
 If you have any questions please do not hesitate to reach out.
 
 ---
 
-
-# DEEL BACKEND TASK
-
-  
-
 💫 Welcome! 🎉
 
 
-This backend exercise involves building a Node.js/Express.js app that will serve a REST API. We imagine you should spend around 3 hours at implement this feature.
+This backend exercise involves building a Node.js/Express.js app that will serve a REST API.
 
 ## Data Models
 
@@ -136,21 +131,3 @@ Below is a list of the required API's for the application.
     }
 ]
 ```
-
-  
-
-## Going Above and Beyond the Requirements
-
-Given the time expectations of this exercise, we don't expect anyone to submit anything super fancy, but if you find yourself with extra time, any extra credit item(s) that showcase your unique strengths would be awesome! 🙌
-
-It would be great for example if you'd write some unit test / simple frontend demostrating calls to your fresh APIs.
-
-  
-
-## Submitting the Assignment
-
-When you have finished the assignment, create a github repository and send us the link.
-
-  
-
-Thank you and good luck! 🙏
