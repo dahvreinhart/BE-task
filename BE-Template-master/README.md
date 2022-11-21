@@ -16,7 +16,7 @@ So I will elaborate on what my immediate next steps would have been had time not
 I also noticed that concurrency is a topic which is important here.
 To this end I implemented several applicable concepts for the logic concerned with updating models:
 - All models are now versioned meaning they will be protected against race conditions updating outdated information at the DB level
-- Logic which updates models (the two POST endpoints) are transationed meaning all reading and writing occures with SQL transactions - updates are only commited if no intermediate erros are encountered
+- Logic which updates models (the two POST endpoints) are transactioned meaning all reading and writing occurs with SQL transactions; updates are only commited if no intermediate erros are encountered
 - Logic which updtes models (the two POST endpoints) use DB locks for objects to be updated locking the specific rows for these objects, thus, not allowing intermediate updates on the tables during these critical times
 
 Lastly, I implemented some tests for some endpoints.
